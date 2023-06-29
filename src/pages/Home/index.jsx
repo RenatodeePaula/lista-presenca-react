@@ -1,11 +1,12 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import "./styles.css"
 
 import { Card } from "../../components/Card"
 
 export function Home() {    
   const [studentName, setStudentName] = useState("")
-  const [ students, setStudents] = useState([])
+  const [students, setStudents] = useState([])
+  const [user, setUser] = useState({ name:'', avatar:'' })
 
   function handleAddStudent() {
     const newStudent = {
@@ -13,16 +14,39 @@ export function Home() {
       time: new Date().toLocaleDateString("pt-br", {
         hour: '2-digit',
         minute: '2-digit',
-        secound: '2-digit',
-      }) 
+        second: '2-digit',
+    }),
     }
-    setStudents(prevState => [...prevState, newStudent])
+    setStudents((prevState) => [...prevState, newStudent]);
   }
+
+  useEffect(() => {
+    async function fetchData() {
+      const response = await fetch("https://api.github.com/users/renatodeepaula");
+      const data = await response.json();
+      console.log("DADOS =>", data);
+
+      setUser({
+        name: data.login,
+        avatar: data.avatar_url,
+      });
+    }
+
+    fetchData();
+  }, []);
+
 
   return (
     <div className='container'>
+      <header>
       <h1>Lista de Pesença</h1>
+      <div>
+        <strong>{user.name}</strong>
+        <img src={user.avatar} alt="Foto de perfil" />
 
+      </div>
+
+      </header>
       <input 
         type="text" 
         placeholder="Digite o nome..."
@@ -33,8 +57,11 @@ export function Home() {
       </button>
 
       {
-        students.map(student => <Card name={student.name} horario={student.time} />) 
-        
+        students.map(student => (<Card
+                                  key={student.time} 
+                                  name={student.name} 
+                                  time={student.time} 
+                                  />))         
       }
    
     </div>   
